@@ -1,0 +1,38 @@
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Backend
+backend/target/
+backend/.mvn/
+backend/mvnw
+backend/mvnw.cmd
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.nuxt/
+frontend/.vite/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Uploads (keep structure but ignore files)
+uploads/**/*
+!uploads/.gitkeep
+!uploads/datasets/.gitkeep
+!uploads/results/.gitkeep
+
+# Database
+*.db
+*.sqlite

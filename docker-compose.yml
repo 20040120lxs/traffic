@@ -1,0 +1,72 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: difflight-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: traffic_db
+      MYSQL_CHARACTER_SET_SERVER: utf8mb4
+      MYSQL_COLLATION_SERVER: utf8mb4_unicode_ci
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - difflight-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: difflight-backend
+    environment:
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_NAME=traffic_db
+      - DB_USERNAME=root
+      - DB_PASSWORD=root123
+      - JWT_SECRET=mySecretKey123456789012345678901234567890
+      - JWT_EXPIRATION=86400000
+      - FILE_UPLOAD_DIR=/app/uploads
+      - SERVER_PORT=8080
+      - SWAGGER_ENABLED=true
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./uploads:/app/uploads
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - difflight-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api-docs"]
+      timeout: 30s
+      retries: 5
+      start_period: 30s
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: difflight-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - difflight-network
+
+volumes:
+  mysql_data:
+
+networks:
+  difflight-network:
+    driver: bridge
